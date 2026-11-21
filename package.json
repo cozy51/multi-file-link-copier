@@ -1,0 +1,15 @@
+{
+  "name": "multi-file-link-copier",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && esbuild main.ts --bundle --external:obsidian --format=cjs --target=es2021 --outfile=main.js"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "esbuild": "0.28.2",
+    "obsidian": "1.14.4",
+    "typescript": "5.9.3"
+  }
+}
