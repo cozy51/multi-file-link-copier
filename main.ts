@@ -38,6 +38,8 @@ const DEFAULT_SETTINGS: CopierSettings = {
   visibleFormats: { wiki: true, relative: true, absolute: true, filename: true },
 };
 const EXPLORER_MENU_SOURCE = "file-explorer-context-menu";
+// Source used by Obsidian for the right-click menu of a tab header.
+const TAB_MENU_SOURCE = "tab-header";
 const MENU_SECTION = "multi-file-link-copier";
 
 function isCopyFormat(value: unknown): value is CopyFormat {
@@ -97,7 +99,9 @@ export default class MultiFileLinkCopier extends Plugin {
     this.settings = readSettings(await this.loadData());
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file, source) => {
-        if (source === EXPLORER_MENU_SOURCE) this.addCopyMenu(menu, [file]);
+        if (source === EXPLORER_MENU_SOURCE || source === TAB_MENU_SOURCE) {
+          this.addCopyMenu(menu, [file]);
+        }
       }),
     );
     this.registerEvent(
@@ -136,7 +140,10 @@ export default class MultiFileLinkCopier extends Plugin {
     const preferred = formats.indexOf(this.settings.defaultFormat);
     if (preferred > 0) formats.unshift(...formats.splice(preferred, 1));
 
-    addCopyGroup(menu, `選択ファイルをコピー（${selection.length}件）`, (target, section) => {
+    const title = selection.length === 1
+      ? "ファイルをコピー"
+      : `選択ファイルをコピー（${selection.length}件）`;
+    addCopyGroup(menu, title, (target, section) => {
       for (const format of formats) {
         target.addItem((item) => {
           if (section) item.setSection(section);
