@@ -117,7 +117,17 @@ var MultiFileLinkCopier = class extends import_obsidian.Plugin {
     if (formats.length === 0) return;
     const preferred = formats.indexOf(this.settings.defaultFormat);
     if (preferred > 0) formats.unshift(...formats.splice(preferred, 1));
-    const title = selection.length === 1 ? "\u30D5\u30A1\u30A4\u30EB\u3092\u30B3\u30D4\u30FC" : `\u9078\u629E\u30D5\u30A1\u30A4\u30EB\u3092\u30B3\u30D4\u30FC\uFF08${selection.length}\u4EF6\uFF09`;
+    const count = selection.length === 1 ? "" : `\uFF08${selection.length}\u4EF6\uFF09`;
+    if (formats.length === 1) {
+      const [format] = formats;
+      menu.addItem((item) => {
+        item.setSection(MENU_SECTION).setTitle(`${FORMATS[format]}\u3092\u30B3\u30D4\u30FC${count}`).setIcon("copy").onClick(() => {
+          void this.copyFiles(selection, format);
+        });
+      });
+      return;
+    }
+    const title = selection.length === 1 ? "\u30D5\u30A1\u30A4\u30EB\u3092\u30B3\u30D4\u30FC" : `\u9078\u629E\u30D5\u30A1\u30A4\u30EB\u3092\u30B3\u30D4\u30FC${count}`;
     addCopyGroup(menu, title, (target, section) => {
       for (const format of formats) {
         target.addItem((item) => {

@@ -140,9 +140,22 @@ export default class MultiFileLinkCopier extends Plugin {
     const preferred = formats.indexOf(this.settings.defaultFormat);
     if (preferred > 0) formats.unshift(...formats.splice(preferred, 1));
 
+    const count = selection.length === 1 ? "" : `（${selection.length}件）`;
+    if (formats.length === 1) {
+      // A single visible format needs no submenu: copy with one click.
+      const [format] = formats;
+      menu.addItem((item) => {
+        item.setSection(MENU_SECTION).setTitle(`${FORMATS[format]}をコピー${count}`)
+          .setIcon("copy").onClick(() => {
+            void this.copyFiles(selection, format);
+          });
+      });
+      return;
+    }
+
     const title = selection.length === 1
       ? "ファイルをコピー"
-      : `選択ファイルをコピー（${selection.length}件）`;
+      : `選択ファイルをコピー${count}`;
     addCopyGroup(menu, title, (target, section) => {
       for (const format of formats) {
         target.addItem((item) => {
