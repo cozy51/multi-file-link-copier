@@ -33,7 +33,6 @@ var FORMATS = {
 var FORMAT_ORDER = ["wiki", "relative", "absolute", "filename"];
 var DEFAULT_SETTINGS = {
   defaultFormat: "wiki",
-  wikiStyle: "path",
   showNotice: true,
   visibleFormats: { wiki: true, relative: true, absolute: true, filename: true }
 };
@@ -51,7 +50,6 @@ function readSettings(data) {
   }
   return {
     defaultFormat: isCopyFormat(saved?.defaultFormat) ? saved.defaultFormat : DEFAULT_SETTINGS.defaultFormat,
-    wikiStyle: saved?.wikiStyle === "short" ? "short" : DEFAULT_SETTINGS.wikiStyle,
     showNotice: typeof saved?.showNotice === "boolean" ? saved.showNotice : DEFAULT_SETTINGS.showNotice,
     visibleFormats
   };
@@ -175,11 +173,9 @@ var MultiFileLinkCopier = class extends import_obsidian.Plugin {
   }
   wikiLinks(selection) {
     const nameCounts = /* @__PURE__ */ new Map();
-    if (this.settings.wikiStyle === "short") {
-      for (const file of this.app.vault.getFiles()) {
-        const name = file.name.toLowerCase();
-        nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
-      }
+    for (const file of this.app.vault.getFiles()) {
+      const name = file.name.toLowerCase();
+      nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
     }
     const { metadataCache } = this.app;
     return selection.map(({ file, path }) => {
@@ -198,7 +194,7 @@ var MultiFileLinkCopier = class extends import_obsidian.Plugin {
       if (target !== target.trim() || metadataCache.getFirstLinkpathDest(target, "") !== file) {
         throw new Error(`Wiki\u30EA\u30F3\u30AF\u306E\u53C2\u7167\u5148\u3092\u7279\u5B9A\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\uFF08${file.name}\uFF09\u3002`);
       }
-      return `[[${target}|${label}]]`;
+      return `[[${target}]]`;
     });
   }
 };
@@ -213,11 +209,6 @@ var CopierSettingTab = class extends import_obsidian.PluginSettingTab {
       for (const format of FORMAT_ORDER) dropdown.addOption(format, FORMATS[format]);
       dropdown.setValue(this.copier.settings.defaultFormat).onChange((value) => {
         if (isCopyFormat(value)) this.copier.updateSettings({ defaultFormat: value });
-      });
-    });
-    new import_obsidian.Setting(this.containerEl).setName("Wiki\u30EA\u30F3\u30AF\u306E\u8868\u793A\u5F62\u5F0F").setDesc("\u540C\u540D\u30D5\u30A1\u30A4\u30EB\u3092\u533A\u5225\u3059\u308B\u305F\u3081\u3001\u5FC5\u8981\u306A\u5834\u5408\u306F\u30D5\u30A9\u30EB\u30C0\u3092\u542B\u3080\u5F62\u5F0F\u3092\u4F7F\u3044\u307E\u3059\u3002").addDropdown((dropdown) => {
-      dropdown.addOption("path", "[[\u30D5\u30A9\u30EB\u30C0/\u30D5\u30A1\u30A4\u30EB\u540D|\u30D5\u30A1\u30A4\u30EB\u540D]]").addOption("short", "[[\u30D5\u30A1\u30A4\u30EB\u540D]]").setValue(this.copier.settings.wikiStyle).onChange((value) => {
-        this.copier.updateSettings({ wikiStyle: value === "short" ? "short" : "path" });
       });
     });
     new import_obsidian.Setting(this.containerEl).setName("\u30B3\u30D4\u30FC\u6210\u529F\u6642\u306E\u901A\u77E5").addToggle((toggle) => {

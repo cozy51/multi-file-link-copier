@@ -19,11 +19,9 @@ const FORMATS = {
 } as const;
 
 type CopyFormat = keyof typeof FORMATS;
-type WikiStyle = "path" | "short";
 
 interface CopierSettings {
   defaultFormat: CopyFormat;
-  wikiStyle: WikiStyle;
   showNotice: boolean;
   visibleFormats: Record<CopyFormat, boolean>;
 }
@@ -36,7 +34,6 @@ interface SelectedFile {
 const FORMAT_ORDER: CopyFormat[] = ["wiki", "relative", "absolute", "filename"];
 const DEFAULT_SETTINGS: CopierSettings = {
   defaultFormat: "wiki",
-  wikiStyle: "path",
   showNotice: true,
   visibleFormats: { wiki: true, relative: true, absolute: true, filename: true },
 };
@@ -59,7 +56,6 @@ function readSettings(data: unknown): CopierSettings {
     defaultFormat: isCopyFormat(saved?.defaultFormat)
       ? saved.defaultFormat
       : DEFAULT_SETTINGS.defaultFormat,
-    wikiStyle: saved?.wikiStyle === "short" ? "short" : DEFAULT_SETTINGS.wikiStyle,
     showNotice: typeof saved?.showNotice === "boolean"
       ? saved.showNotice
       : DEFAULT_SETTINGS.showNotice,
@@ -206,11 +202,9 @@ export default class MultiFileLinkCopier extends Plugin {
 
   private wikiLinks(selection: SelectedFile[]): string[] {
     const nameCounts = new Map<string, number>();
-    if (this.settings.wikiStyle === "short") {
-      for (const file of this.app.vault.getFiles()) {
-        const name = file.name.toLowerCase();
-        nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
-      }
+    for (const file of this.app.vault.getFiles()) {
+      const name = file.name.toLowerCase();
+      nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
     }
 
     const { metadataCache } = this.app;
@@ -235,7 +229,8 @@ export default class MultiFileLinkCopier extends Plugin {
       if (target !== target.trim() || metadataCache.getFirstLinkpathDest(target, "") !== file) {
         throw new Error(`Wikiリンクの参照先を特定できませんでした（${file.name}）。`);
       }
-      return `[[${target}|${label}]]`;
+      // No alias: the link text is the file name (with folders only when needed).
+      return `[[${target}]]`;
     });
   }
 }
@@ -256,19 +251,6 @@ class CopierSettingTab extends PluginSettingTab {
         dropdown.setValue(this.copier.settings.defaultFormat).onChange((value) => {
           if (isCopyFormat(value)) this.copier.updateSettings({ defaultFormat: value });
         });
-      });
-
-    new Setting(this.containerEl)
-      .setName("Wikiリンクの表示形式")
-      .setDesc("同名ファイルを区別するため、必要な場合はフォルダを含む形式を使います。")
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption("path", "[[フォルダ/ファイル名|ファイル名]]")
-          .addOption("short", "[[ファイル名]]")
-          .setValue(this.copier.settings.wikiStyle)
-          .onChange((value) => {
-            this.copier.updateSettings({ wikiStyle: value === "short" ? "short" : "path" });
-          });
       });
 
     new Setting(this.containerEl)
