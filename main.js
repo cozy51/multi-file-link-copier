@@ -37,6 +37,7 @@ var DEFAULT_SETTINGS = {
   visibleFormats: { wiki: true, relative: true, absolute: true, filename: true }
 };
 var EXPLORER_MENU_SOURCE = "file-explorer-context-menu";
+var TAB_MENU_SOURCE = "tab-header";
 var MENU_SECTION = "multi-file-link-copier";
 function isCopyFormat(value) {
   return FORMAT_ORDER.some((format) => format === value);
@@ -82,7 +83,9 @@ var MultiFileLinkCopier = class extends import_obsidian.Plugin {
     this.settings = readSettings(await this.loadData());
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file, source) => {
-        if (source === EXPLORER_MENU_SOURCE) this.addCopyMenu(menu, [file]);
+        if (source === EXPLORER_MENU_SOURCE || source === TAB_MENU_SOURCE) {
+          this.addCopyMenu(menu, [file]);
+        }
       })
     );
     this.registerEvent(
@@ -114,7 +117,8 @@ var MultiFileLinkCopier = class extends import_obsidian.Plugin {
     if (formats.length === 0) return;
     const preferred = formats.indexOf(this.settings.defaultFormat);
     if (preferred > 0) formats.unshift(...formats.splice(preferred, 1));
-    addCopyGroup(menu, `\u9078\u629E\u30D5\u30A1\u30A4\u30EB\u3092\u30B3\u30D4\u30FC\uFF08${selection.length}\u4EF6\uFF09`, (target, section) => {
+    const title = selection.length === 1 ? "\u30D5\u30A1\u30A4\u30EB\u3092\u30B3\u30D4\u30FC" : `\u9078\u629E\u30D5\u30A1\u30A4\u30EB\u3092\u30B3\u30D4\u30FC\uFF08${selection.length}\u4EF6\uFF09`;
+    addCopyGroup(menu, title, (target, section) => {
       for (const format of formats) {
         target.addItem((item) => {
           if (section) item.setSection(section);
