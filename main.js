@@ -36,10 +36,6 @@ var DEFAULT_SETTINGS = {
   showNotice: true,
   visibleFormats: { wiki: true, relative: true, absolute: true, filename: true }
 };
-var EXPLORER_MENU_SOURCE = "file-explorer-context-menu";
-var TAB_MENU_SOURCE = "tab-header";
-var LINK_MENU_SOURCE = "link-context-menu";
-var FILE_MENU_SOURCES = /* @__PURE__ */ new Set([EXPLORER_MENU_SOURCE, TAB_MENU_SOURCE, LINK_MENU_SOURCE]);
 var MENU_SECTION = "multi-file-link-copier";
 function isCopyFormat(value) {
   return FORMAT_ORDER.some((format) => format === value);
@@ -84,15 +80,15 @@ var MultiFileLinkCopier = class extends import_obsidian.Plugin {
   async onload() {
     this.settings = readSettings(await this.loadData());
     this.registerEvent(
-      this.app.workspace.on("file-menu", (menu, file, source) => {
-        if (FILE_MENU_SOURCES.has(source)) {
-          this.addCopyMenu(menu, [file]);
-        }
+      // Every file context menu is accepted (explorer, tabs, links, Bases, ...):
+      // the source strings are not part of the public API, so new views keep working.
+      this.app.workspace.on("file-menu", (menu, file) => {
+        this.addCopyMenu(menu, [file]);
       })
     );
     this.registerEvent(
-      this.app.workspace.on("files-menu", (menu, files, source) => {
-        if (source === EXPLORER_MENU_SOURCE && Array.isArray(files)) {
+      this.app.workspace.on("files-menu", (menu, files) => {
+        if (Array.isArray(files)) {
           this.addCopyMenu(menu, files);
         }
       })

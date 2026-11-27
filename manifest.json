@@ -1,7 +1,7 @@
 {
   "id": "multi-file-link-copier",
   "name": "Multi File Link Copier",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "minAppVersion": "1.5.7",
   "description": "標準ファイルエクスプローラーで選択したファイルのWikiリンク、パス、名前をまとめてコピーします。",
   "author": "Multi File Link Copier contributors",
