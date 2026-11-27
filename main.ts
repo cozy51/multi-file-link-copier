@@ -40,6 +40,10 @@ const DEFAULT_SETTINGS: CopierSettings = {
 const EXPLORER_MENU_SOURCE = "file-explorer-context-menu";
 // Source used by Obsidian for the right-click menu of a tab header.
 const TAB_MENU_SOURCE = "tab-header";
+// Source used by Obsidian for the right-click menu of an internal link
+// (editor, reading view, properties and Bases).
+const LINK_MENU_SOURCE = "link-context-menu";
+const FILE_MENU_SOURCES = new Set([EXPLORER_MENU_SOURCE, TAB_MENU_SOURCE, LINK_MENU_SOURCE]);
 const MENU_SECTION = "multi-file-link-copier";
 
 function isCopyFormat(value: unknown): value is CopyFormat {
@@ -99,7 +103,7 @@ export default class MultiFileLinkCopier extends Plugin {
     this.settings = readSettings(await this.loadData());
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file, source) => {
-        if (source === EXPLORER_MENU_SOURCE || source === TAB_MENU_SOURCE) {
+        if (FILE_MENU_SOURCES.has(source)) {
           this.addCopyMenu(menu, [file]);
         }
       }),

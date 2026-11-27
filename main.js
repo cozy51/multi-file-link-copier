@@ -38,6 +38,8 @@ var DEFAULT_SETTINGS = {
 };
 var EXPLORER_MENU_SOURCE = "file-explorer-context-menu";
 var TAB_MENU_SOURCE = "tab-header";
+var LINK_MENU_SOURCE = "link-context-menu";
+var FILE_MENU_SOURCES = /* @__PURE__ */ new Set([EXPLORER_MENU_SOURCE, TAB_MENU_SOURCE, LINK_MENU_SOURCE]);
 var MENU_SECTION = "multi-file-link-copier";
 function isCopyFormat(value) {
   return FORMAT_ORDER.some((format) => format === value);
@@ -83,7 +85,7 @@ var MultiFileLinkCopier = class extends import_obsidian.Plugin {
     this.settings = readSettings(await this.loadData());
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file, source) => {
-        if (source === EXPLORER_MENU_SOURCE || source === TAB_MENU_SOURCE) {
+        if (FILE_MENU_SOURCES.has(source)) {
           this.addCopyMenu(menu, [file]);
         }
       })
